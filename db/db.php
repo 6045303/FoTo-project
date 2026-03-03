@@ -2,7 +2,7 @@
 $host = "localhost";
 $dbname = "foto_project";
 $user = "root";
-$pass = "";
+$pass = "root";
 
 try {
     $pdo = new PDO(
