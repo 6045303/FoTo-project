@@ -42,6 +42,15 @@ FoTo-project/
 $db = \App\Database::getInstance();
 ```
 
+## JavaScript Modules
+De weer API wordt geïntegreerd in het buiten-activiteiten boekingsformulier via één autocomplete-module:
+
+- **src/JS/api/WeatherAPI.js** – klasse met statische basis-URL, `fetchByCity()`, en conversies.
+- **src/JS/ui/LocationWeatherSearch.js** – DOM-module die een dropdown-autocomplete biedt voor het locatieveld in het buiten-formulier.
+
+In het formulier van `website.php?page=booking-outdoor` staat een locatie-input die automatisch weer-suggesties ophaalt.
+
+
 ### User.php
 Handles user authentication, registration, en role management.
 ```php

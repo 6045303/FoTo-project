@@ -1,6 +1,7 @@
 // Weer client (KNMI token)
-document.addEventListener('DOMContentLoaded', () => {
-    const cityInput = document.querySelector('.cityInput');
+// NOTE: this legacy script is no longer used; replaced by ES modules under src/JS
+
+document.addEventListener('DOMContentLoaded', () => {    const cityInput = document.querySelector('.cityInput');
     const card = document.querySelector('.card');
     const weatherButton = document.getElementById('weather-button');
 

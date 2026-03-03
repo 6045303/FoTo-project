@@ -15,8 +15,7 @@ try {
         'gasten' => isset($_POST['gasten']) ? (int)$_POST['gasten'] : 1,
         'locatie' => isset($_POST['locatie']) ? trim($_POST['locatie']) : null,
         'overdekt' => isset($_POST['overdekt']) ? 1 : 0,
-        'opmerkingen' => isset($_POST['opmerkingen']) ? trim($_POST['opmerkingen']) : null,
-        'plaats' => isset($_POST['plaats']) ? trim($_POST['plaats']) : null
+        'opmerkingen' => isset($_POST['opmerkingen']) ? trim($_POST['opmerkingen']) : null
     ];
 
     if ($data['naam'] === '') {

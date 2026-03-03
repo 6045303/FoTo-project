@@ -4,10 +4,6 @@ namespace App;
 
 use PDOException;
 
-/**
- * Booking Model Class
- * Handles activity bookings (binnen and buiten activities)
- */
 class Booking
 {
     private $db;
@@ -17,17 +13,15 @@ class Booking
         $this->db = Database::getInstance();
     }
 
-    /**
-     * Create a new booking
-     */
+
     public function create(array $data): bool
     {
         $this->validateBookingData($data);
 
         try {
             $stmt = $this->db->prepare(
-                'INSERT INTO bookings (activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, plaats)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                'INSERT INTO bookings (activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
 
             return $stmt->execute([
@@ -40,22 +34,19 @@ class Booking
                 $data['gasten'] ?? 1,
                 $data['locatie'] ?? null,
                 $data['overdekt'] ?? 0,
-                $data['opmerkingen'] ?? null,
-                $data['plaats'] ?? null
+                $data['opmerkingen'] ?? null
             ]);
         } catch (PDOException $e) {
             throw new \Exception('Er is een fout opgetreden bij het opslaan van de boeking.');
         }
     }
 
-    /**
-     * Get all bookings
-     */
+
     public function getAll(): array
     {
         try {
             $stmt = $this->db->query(
-                'SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, plaats, created_at
+                'SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, created_at
                  FROM bookings ORDER BY created_at DESC'
             );
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -64,14 +55,12 @@ class Booking
         }
     }
 
-    /**
-     * Get booking by ID
-     */
+   
     public function getById(int $id): ?array
     {
         try {
             $stmt = $this->db->prepare(
-                'SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, plaats, created_at
+                'SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, created_at
                  FROM bookings WHERE id = ?'
             );
             $stmt->execute([$id]);
@@ -81,14 +70,12 @@ class Booking
         }
     }
 
-    /**
-     * Get bookings by activity type
-     */
+  
     public function getByType(string $type): array
     {
         try {
             $stmt = $this->db->prepare(
-                'SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, plaats, created_at
+                'SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, created_at
                  FROM bookings WHERE activity_type = ? ORDER BY created_at DESC'
             );
             $stmt->execute([$type]);
@@ -98,9 +85,7 @@ class Booking
         }
     }
 
-    /**
-     * Delete booking
-     */
+
     public function delete(int $id): bool
     {
         try {
@@ -111,14 +96,12 @@ class Booking
         }
     }
 
-    /**
-     * Update booking
-     */
+    
     public function update(int $id, array $data): bool
     {
         try {
             $stmt = $this->db->prepare(
-                'UPDATE bookings SET activity_type = ?, naam = ?, email = ?, telefoon = ?, datum = ?, tijd = ?, gasten = ?, locatie = ?, overdekt = ?, opmerkingen = ?, plaats = ?
+                'UPDATE bookings SET activity_type = ?, naam = ?, email = ?, telefoon = ?, datum = ?, tijd = ?, gasten = ?, locatie = ?, overdekt = ?, opmerkingen = ?
                  WHERE id = ?'
             );
 
@@ -133,7 +116,6 @@ class Booking
                 $data['locatie'] ?? null,
                 $data['overdekt'] ?? 0,
                 $data['opmerkingen'] ?? null,
-                $data['plaats'] ?? null,
                 $id
             ]);
         } catch (PDOException $e) {

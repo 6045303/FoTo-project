@@ -215,6 +215,25 @@ if ($page === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
+        .weather-dropdown {
+            max-width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .weather-dropdown.hidden {
+            display: none;
+        }
+        
+        .weather-item {
+            border-color: var(--tan);
+            transition: background-color 0.2s;
+        }
+        
+        .weather-item:hover {
+            background-color: rgba(212, 165, 116, 0.1);
+        }
+        
         .header {
             background-color: var(--deepblack);
             color: var(--textWhite);
@@ -281,12 +300,12 @@ if ($page === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex items-center justify-between mb-4">
                 <h1 class="text-3xl font-bold">
-                    <a href="website.php" style="color: var(--textWhite); text-decoration: none;">FoTo Project</a>
+                    <a href="website.php" class="text-white no-underline">FoTo Project</a>
                 </h1>
                 <div class="flex items-center gap-4">
                     <?php if ($user_id): ?>
                         <span class="text-sm">Welkom, <strong><?php echo htmlspecialchars($user_name); ?></strong></span>
-                        <span class="text-xs px-2 py-1 rounded" style="background-color: var(--gold); color: var(--deepblack);">
+                        <span class="text-xs px-2 py-1 rounded bg-yellow-300 text-black">
                             <?php echo ucfirst($user_role); ?>
                         </span>
                         <a href="website.php?logout=1" class="text-sm underline hover:no-underline">Uitloggen</a>
@@ -344,6 +363,101 @@ if ($page === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
                                 <p class="text-sm text-gray-600">Buiten activiteit reserveren</p>
                             </a>
                         </div>
+
+                        <!-- calendar container -->
+                        <?php
+                        // fetch bookings for display
+                        $bookingObj = new \App\Booking();
+                        $bookings = $bookingObj->getAll();
+                        $bookingsJson = json_encode($bookings);
+                        ?>
+                        <div class="mt-10">
+                            <h3 class="text-2xl font-bold mb-4" style="color: var(--deepblack);">Kalender</h3>
+                            <div class="flex items-center justify-between mb-2">
+                                <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded">&#9664;</button>
+                                <span id="monthLabel" class="font-semibold"></span>
+                                <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded">&#9654;</button>
+                            </div>
+                            <div id="calendar" class="w-full"></div>
+                        </div>
+
+                        <script>
+                            const bookings = <?php echo $bookingsJson; ?>;
+                            let currentYear = (new Date()).getFullYear();
+                            let currentMonth = (new Date()).getMonth();
+
+                            function renderCalendar(year, month) {
+                                const cal = document.getElementById('calendar');
+                                cal.innerHTML = '';
+                                document.getElementById('monthLabel').textContent =
+                                    new Date(year, month).toLocaleString('nl-NL', { month: 'long', year: 'numeric' });
+
+                                const firstDay = new Date(year, month, 1).getDay();
+                                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                                const table = document.createElement('table');
+                                table.className = 'w-full table-fixed border-collapse';
+                                const header = document.createElement('tr');
+                                ['Zo','Ma','Di','Wo','Do','Vr','Za'].forEach(d => {
+                                    const th = document.createElement('th');
+                                    th.className = 'border p-2 bg-gray-100';
+                                    th.textContent = d;
+                                    header.appendChild(th);
+                                });
+                                table.appendChild(header);
+
+                                let row = document.createElement('tr');
+                                for (let i = 0; i < firstDay; i++) {
+                                    const td = document.createElement('td');
+                                    td.className = 'border p-2 h-24 align-top';
+                                    row.appendChild(td);
+                                }
+                                for (let day = 1; day <= daysInMonth; day++) {
+                                    if ((firstDay + day -1) % 7 === 0 && day !== 1) {
+                                        table.appendChild(row);
+                                        row = document.createElement('tr');
+                                    }
+                                    const td = document.createElement('td');
+                                    td.className = 'border p-2 h-24 align-top';
+                                    const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                                    td.innerHTML = `<strong>${day}</strong>`;
+                                    bookings.forEach(b => {
+                                        if (b.datum && b.datum.startsWith(dateKey)) {
+                                            const div = document.createElement('div');
+                                            div.style.cssText = 'font-size:0.75rem; margin-top:0.25rem; padding:0.25rem; background-color: rgba(212,165,116,0.2); border-radius:0.25rem;';
+                                            div.textContent = b.naam || b.activity_type;
+                                            td.appendChild(div);
+                                        }
+                                    });
+                                    row.appendChild(td);
+                                }
+                                while (row.children.length < 7) {
+                                    const td = document.createElement('td');
+                                    td.className = 'border p-2 h-24';
+                                    row.appendChild(td);
+                                }
+                                table.appendChild(row);
+                                cal.appendChild(table);
+                            }
+
+                            document.getElementById('prevMonth').addEventListener('click', () => {
+                                currentMonth--;
+                                if (currentMonth < 0) {
+                                    currentMonth = 11;
+                                    currentYear--;
+                                }
+                                renderCalendar(currentYear, currentMonth);
+                            });
+                            document.getElementById('nextMonth').addEventListener('click', () => {
+                                currentMonth++;
+                                if (currentMonth > 11) {
+                                    currentMonth = 0;
+                                    currentYear++;
+                                }
+                                renderCalendar(currentYear, currentMonth);
+                            });
+
+                            renderCalendar(currentYear, currentMonth);
+                        </script>
                     <?php else: ?>
                         <div class="flex gap-4 justify-center">
                             <a href="website.php?page=login" class="primary-btn px-8 py-3 rounded-lg font-semibold">Inloggen</a>
@@ -586,12 +700,11 @@ if ($page === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
                         
                         <div>
                             <label class="block text-sm font-medium mb-2">Locatie</label>
-                            <input name="plaats" type="text" class="form-input" placeholder="Plaats">
-                        </div>
-                        
-                        <div class="flex items-center gap-3">
-                            <input id="overdekt" name="overdekt" type="checkbox" class="h-4 w-4">
-                            <label for="overdekt" class="text-sm">Overdekt nodig</label>
+                            <input name="locatie" type="text" id="plaatsInput" class="form-input" placeholder="Plaats">
+                            <!-- Weather info display unter het plaats veld -->
+                            <div id="weatherCard" style="margin-top: 1rem; padding: 1.5rem; background: linear-gradient(180deg, #Faebd7 0%, #D3B69C 100%); border-radius: 0.5rem; border-top: 4px solid #D4A574; display: none;">
+                                <!-- Weather content goes here -->
+                            </div>
                         </div>
                         
                         <div>
@@ -605,6 +718,98 @@ if ($page === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
                         </div>
                     </form>
                 </div>
+                
+                <script>
+                    const apiKey = 'c6908961755f935a67c1027e0be07b50';
+                    const plaatsInput = document.getElementById('plaatsInput');
+                    const weatherCard = document.getElementById('weatherCard');
+                    let weatherTimeout;
+
+                    // Trigger weather lookup when typing in plaats field
+                    plaatsInput.addEventListener('input', async event => {
+                        clearTimeout(weatherTimeout);
+                        const plaats = plaatsInput.value.trim();
+
+                        if (plaats.length > 2) {
+                            // Wait 500ms after user stops typing before fetching
+                            weatherTimeout = setTimeout(async () => {
+                                try {
+                                    const weatherData = await getWeatherData(plaats);
+                                    displayWeatherInfo(weatherData);
+                                } catch (error) {
+                                    console.error(error);
+                                    // Silent fail - don't show error if city not found
+                                    weatherCard.style.display = 'none';
+                                }
+                            }, 500);
+                        } else {
+                            weatherCard.style.display = 'none';
+                        }
+                    });
+
+                    async function getWeatherData(city) {
+                        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+                        const response = await fetch(apiUrl);
+
+                        if (!response.ok) {
+                            throw new Error("Kon weergegevens niet ophalen");
+                        }
+
+                        return await response.json();
+                    }
+
+                    function displayWeatherInfo(data) {
+                        const { name: city, main: { temp, humidity }, weather: [{ description, id }] } = data;
+
+                        weatherCard.innerHTML = "";
+                        weatherCard.style.cssText = "margin-top: 1rem; padding: 1.5rem; background: linear-gradient(180deg, #Faebd7 0%, #D3B69C 100%); border-radius: 0.5rem; border-top: 4px solid #D4A574; display: block; text-align: center;";
+
+                        const cityDisplay = document.createElement("h3");
+                        const tempDisplay = document.createElement("p");
+                        const humidityDisplay = document.createElement("p");
+                        const descDisplay = document.createElement("p");
+                        const weatherEmoji = document.createElement("p");
+
+                        cityDisplay.textContent = city;
+                        tempDisplay.textContent = `${(temp - 273.15).toFixed(1)}°C`;
+                        humidityDisplay.textContent = `Vochtigheid: ${humidity}%`;
+                        descDisplay.textContent = description.charAt(0).toUpperCase() + description.slice(1);
+                        weatherEmoji.textContent = getWeatherEmoji(id);
+
+                        cityDisplay.style.cssText = "font-size: 1.5rem; font-weight: bold; color: #0B0B45; margin: 0 0 0.5rem 0;";
+                        tempDisplay.style.cssText = "font-size: 1.25rem; font-weight: bold; color: #0B0B45; margin: 0.25rem 0;";
+                        humidityDisplay.style.cssText = "font-size: 0.95rem; color: #0B0B45; margin: 0.25rem 0;";
+                        descDisplay.style.cssText = "font-size: 1rem; font-style: italic; color: #0B0B45; margin: 0.5rem 0 0.5rem 0;";
+                        weatherEmoji.style.cssText = "font-size: 3rem; margin: 0.5rem 0 0 0; line-height: 1;";
+
+                        weatherCard.appendChild(cityDisplay);
+                        weatherCard.appendChild(weatherEmoji);
+                        weatherCard.appendChild(tempDisplay);
+                        weatherCard.appendChild(humidityDisplay);
+                        weatherCard.appendChild(descDisplay);
+                    }
+
+                    function getWeatherEmoji(weatherId) {
+                        switch (true) {
+                            case (weatherId >= 200 && weatherId < 300):
+                                return "⛈";
+                            case (weatherId >= 300 && weatherId < 400):
+                                return "🌧";
+                            case (weatherId >= 500 && weatherId < 600):
+                                return "🌧";
+                            case (weatherId >= 600 && weatherId < 700):
+                                return "❄";
+                            case (weatherId >= 700 && weatherId < 800):
+                                return "🌫";
+                            case (weatherId === 800):
+                                return "☀";
+                            case (weatherId >= 801 && weatherId < 810):
+                                return "☁";
+                            default:
+                                return "❓";
+                        }
+                    }
+                </script>
 
             <!-- INVITE PAGE -->
             <?php elseif ($page === 'invite'): ?>

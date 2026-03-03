@@ -136,6 +136,50 @@ $booking = new \App\Booking();
 $booking->create($data);
 ```
 
+### ✅ voeg weer-API integratie in locatieveld toe
+De weer API wordt nu geïntegreerd in het buiten-activiteiten boekingsformulier. Het locatie-invulveld is interactief:
+- `src/JS/api/WeatherAPI.js` – API-wrapper voor OpenWeatherMap
+- `src/JS/ui/LocationWeatherSearch.js` – autocomplete-dropdown met weersgegevens
+
+In het formulier `website.php?page=booking-outdoor` toont het locatie-veld automatisch weer-suggesties terwijl de gebruiker typt.
+
+### ✅ verplaats `plaats` data naar `locatie` en verwijder kolom
+Om oude records niet te verliezen zijn er SQL-commando's beschikbaar die je zelf kunt uitvoeren:
+
+**MySQL**
+```sql
+UPDATE bookings
+SET locatie = plaats
+WHERE (locatie IS NULL OR locatie = '') AND (plaats IS NOT NULL AND plaats <> '');
+
+ALTER TABLE bookings DROP COLUMN IF EXISTS plaats;
+```
+
+**SQLite**
+```sql
+BEGIN TRANSACTION;
+CREATE TABLE bookings_new (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  activity_type TEXT,
+  naam TEXT,
+  email TEXT,
+  telefoon TEXT,
+  datum DATE,
+  tijd TIME,
+  gasten INTEGER DEFAULT 1,
+  locatie TEXT,
+  overdekt INTEGER DEFAULT 0,
+  opmerkingen TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+INSERT INTO bookings_new (id, activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, overdekt, opmerkingen, created_at)
+SELECT id, activity_type, naam, email, telefoon, datum, tijd, gasten, COALESCE(locatie, plaats), overdekt, opmerkingen, created_at
+FROM bookings;
+DROP TABLE bookings;
+ALTER TABLE bookings_new RENAME TO bookings;
+COMMIT;
+```
+
 ### ✅ delete_booking.php
 **Voor:**
 ```php

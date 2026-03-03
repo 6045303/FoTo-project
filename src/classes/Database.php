@@ -117,7 +117,6 @@ class Database
             locatie VARCHAR(255),
             overdekt TINYINT DEFAULT 0,
             opmerkingen TEXT,
-            plaats VARCHAR(255),
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
     }
@@ -159,7 +158,6 @@ class Database
             locatie TEXT,
             overdekt INTEGER DEFAULT 0,
             opmerkingen TEXT,
-            plaats TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )");
     }
