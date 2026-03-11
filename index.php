@@ -11,6 +11,7 @@ if (!ob_get_level()) {
 }
 
 require __DIR__ . '/src/PHP/init.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 // Get current page from URL parameter
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
@@ -26,6 +27,7 @@ if (isset($_GET['logout'])) {
 }
 
 // Determine page title
+
 $titles = [
     'home' => 'Home',
     'login' => 'Inloggen',

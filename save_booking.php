@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/src/PHP/init.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 try {
     $bookingObj = new \App\Booking();
