@@ -8,19 +8,21 @@ $error = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username = trim($_POST['username'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
     $confirm  = trim($_POST['confirm'] ?? '');
 
     // Wachtwoorden moeten gelijk zijn
     if ($password !== $confirm) {
         $error = "Wachtwoorden komen niet overeen";
+
     } else {
         // Registreren
-        if ($auth->register($username, $password)) {
+        if ($auth->register($username, $email, $password)) {
             header("Location: login.php?success=registered");
             exit;
         } else {
-            $error = "Gebruikersnaam bestaat al";
+            $error = "Gebruikersnaam of email bestaat al";
         }
     }
 }
@@ -53,6 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div>
                 <label class="block mb-1 font-medium">Gebruikersnaam</label>
                 <input type="text" name="username" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#0B0B45]">
+            </div>
+
+            <div>
+                <label class="block mb-1 font-medium">Email</label>
+                <input type="email" name="email" required
                        class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#0B0B45]">
             </div>
 

@@ -10,7 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    if ($auth->login($username, $password)) {
+    // Probeer in te loggen via Auth
+    $user = $auth->login($username, $password);
+
+    if ($user instanceof User) {
+        // Login succesvol → redirect
         header("Location: mijn_activiteiten.php");
         exit;
     } else {

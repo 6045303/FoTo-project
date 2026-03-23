@@ -2,45 +2,50 @@
 
 class User
 {
-    public const ROLE_ADMIN = "admin";
-    public const ROLE_USER  = "user";
-    public const ROLE_GUEST = "guest";
-
     private int $id;
     private string $username;
-    private string $role;
+    private string $email;
+    private string $password; // hashed password
 
-    // Constructor is privé zodat je altijd via static methods werkt
-    private function __construct(int $id, string $username, string $role)
+    // Constructor is private zodat je altijd via static constructors werkt
+    private function __construct(int $id, string $username, string $email, string $password)
     {
-        $this->id = $id;
+        $this->id       = $id;
         $this->username = $username;
-        $this->role = $role;
+        $this->email    = $email;
+        $this->password = $password;
     }
 
-    // Static constructors
-    public static function guest(): User
+    // -------------------------
+    // ⭐ Static constructors
+    // -------------------------
+
+    // Maak een user vanuit database-rij
+    public static function fromDatabase(array $row): User
     {
-        return new User(0, "Gast", self::ROLE_GUEST);
+        return new User(
+            $row['id'],
+            $row['username'],
+            $row['email'],
+            $row['password']
+        );
     }
 
-    public static function admin(int $id, string $username): User
+    // Maak een nieuwe user (bij registratie)
+    public static function create(string $username, string $email, string $password): User
     {
-        return new User($id, $username, self::ROLE_ADMIN);
+        return new User(
+            0, // wordt later door database ingevuld
+            $username,
+            $email,
+            password_hash($password, PASSWORD_DEFAULT)
+        );
     }
 
-    public static function normal(int $id, string $username): User
-    {
-        return new User($id, $username, self::ROLE_USER);
-    }
+    // -------------------------
+    // ⭐ Getters
+    // -------------------------
 
-    // Wordt gebruikt als er per ongeluk een array in de sessie staat
-    public static function fromDatabase(int $id, string $username, string $role): User
-    {
-        return new User($id, $username, $role);
-    }
-
-    // Getters
     public function getId(): int
     {
         return $this->id;
@@ -51,24 +56,41 @@ class User
         return $this->username;
     }
 
-    public function getRole(): string
+    public function getEmail(): string
     {
-        return $this->role;
+        return $this->email;
     }
 
-    // Role checks
-    public function isAdmin(): bool
+    public function getPasswordHash(): string
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->password;
     }
 
-    public function isUser(): bool
+    // -------------------------
+    // ⭐ Domain methods (gedrag)
+    // -------------------------
+
+    // Check of wachtwoord klopt
+    public function verifyPassword(string $password): bool
     {
-        return $this->role === self::ROLE_USER;
+        return password_verify($password, $this->password);
     }
 
-    public function isGuest(): bool
+    // Verander wachtwoord
+    public function changePassword(string $newPassword): void
     {
-        return $this->role === self::ROLE_GUEST;
+        $this->password = password_hash($newPassword, PASSWORD_DEFAULT);
+    }
+
+    // Update email
+    public function updateEmail(string $newEmail): void
+    {
+        $this->email = $newEmail;
+    }
+
+    // Update username
+    public function updateUsername(string $newUsername): void
+    {
+        $this->username = $newUsername;
     }
 }
