@@ -1,15 +1,12 @@
 <?php
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '../config.php';
 
 class Database
 {
     private static ?PDO $instance = null;
 
-    private function __construct() {} // voorkomt dat er meerdere connecties worden gemaakt
+    private function __construct() {}
 
-    // Hergebruik van database connectie:
-    // Via getInstance() wordt steeds dezelfde PDO connectie teruggegeven.
-    // Dit maakt het project efficiënter en voorkomt dubbele verbindingen.
     public static function getInstance(): PDO
     {
         if (self::$instance === null) {
