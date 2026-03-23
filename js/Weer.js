@@ -1,106 +1,86 @@
-// Selectors
-const button = document.getElementById("weather-button");
-const cityInput = document.getElementById("plaats");
-const card = document.getElementById("weather-result");
+import WeatherService from "./WeatherService.js";
 
-// JOUW API KEY HIER
-const apiKey = "c6908961755f935a67c1027e0be07b50";
-
-// Button click event
-button.addEventListener("click", async () => {
-
-    const city = cityInput.value.trim();
-
-    if (!city) {
-        displayError("Please enter a city");
-        return;
+class WeatherApp extends WeatherService {
+    constructor() {
+        super();
+        this.button = document.getElementById("weather-button");
+        this.cityInput = document.getElementById("plaats");
+        this.result = document.getElementById("weather-result");
     }
 
-    try {
-        const weatherData = await getWeatherData(city);
-        displayWeatherInfo(weatherData);
-    } catch (error) {
-        console.error(error);
-        displayError("Could not fetch weather data");
+    static emojiFor(weatherId) {
+        if (weatherId >= 200 && weatherId < 300) return "Onweer";
+        if (weatherId >= 300 && weatherId < 600) return "Regen";
+        if (weatherId >= 600 && weatherId < 700) return "Sneeuw";
+        if (weatherId === 800) return "Zonnig";
+        if (weatherId > 800) return "Bewolkt";
+        return "Onbekend";
     }
+
+    createTemplate(weather) {
+        return `
+            <div class="rounded-xl shadow-lg p-5 bg-gradient-to-b from-[#0B0B45] to-[#D3B69C] text-white text-center">
+                <h3 class="text-2xl font-bold">${weather.city}</h3>
+                <p class="mt-2">Temperatuur: ${weather.temperature} °C</p>
+                <p>Luchtvochtigheid: ${weather.humidity}%</p>
+                <p>Beschrijving: ${weather.description}</p>
+                <p>Status: ${weather.label}</p>
+            </div>
+        `;
+    }
+
+    showMessage(message) {
+        if (!this.result) {
+            return;
+        }
+
+        this.result.classList.remove("hidden");
+        this.result.innerHTML = `<div class="rounded-xl bg-white border border-gray-300 p-4 text-center text-gray-700">${message}</div>`;
+    }
+
+    async handleClick() {
+        if (!this.cityInput || !this.result) {
+            return;
+        }
+
+        const city = this.cityInput.value.trim();
+
+        if (city === "") {
+            this.showMessage("Vul eerst een plaats in.");
+            return;
+        }
+
+        this.showMessage("Weer wordt opgehaald...");
+
+        try {
+            const data = await this.getWeather(city);
+            const weather = {
+                city: data.name,
+                temperature: Number(data.main.temp).toFixed(1),
+                humidity: data.main.humidity,
+                description: data.weather[0].description,
+                label: WeatherApp.emojiFor(data.weather[0].id),
+            };
+
+            this.result.classList.remove("hidden");
+            this.result.innerHTML = this.createTemplate(weather);
+        } catch (error) {
+            this.showMessage("Kon het weer niet ophalen. Controleer de plaatsnaam.");
+        }
+    }
+
+    init() {
+        if (!this.button) {
+            return;
+        }
+
+        this.button.addEventListener("click", () => {
+            this.handleClick();
+        });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const app = new WeatherApp();
+    app.init();
 });
-
-// Fetch weather data
-async function getWeatherData(city) {
-
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-
-    const response = await fetch(apiUrl);
-
-    if (!response.ok) {
-        throw new Error("Could not fetch weather data");
-    }
-
-    return await response.json();
-}
-
-// Display weather info
-function displayWeatherInfo(data) {
-
-    const { name: city,
-        main: { temp, humidity },
-        weather: [{ description, id }]
-    } = data;
-
-    
-    const tempC = (temp - 273.15).toFixed(1);
-
-    // Reset card
-    card.classList.remove("hidden");
-    card.innerHTML = "";
-
-    // Build elements
-    const cityDisplay = document.createElement("h1");
-    const tempDisplay = document.createElement("p");
-    const humidityDisplay = document.createElement("p");
-    const descDisplay = document.createElement("p");
-    const weatherEmoji = document.createElement("p");
-
-    cityDisplay.textContent = city;
-    tempDisplay.textContent = `${tempC}°C`;
-    humidityDisplay.textContent = `Humidity: ${humidity}%`;
-    descDisplay.textContent = description;
-    weatherEmoji.textContent = getWeatherEmoji(id);
-
-    // Tailwind classes
-    cityDisplay.className = "text-2xl font-bold m-0";
-    tempDisplay.className = "text-lg m-0";
-    humidityDisplay.className = "text-lg m-0";
-    descDisplay.className = "text-lg m-0";
-    weatherEmoji.className = "text-3xl";
-
-    // Append
-    card.appendChild(cityDisplay);
-    card.appendChild(tempDisplay);
-    card.appendChild(humidityDisplay);
-    card.appendChild(descDisplay);
-    card.appendChild(weatherEmoji);
-}
-
-// Emoji logic
-function getWeatherEmoji(weatherId) {
-    switch (true) {
-        case (weatherId >= 200 && weatherId < 300): return "⛈";
-        case (weatherId >= 300 && weatherId < 400): return "🌧";
-        case (weatherId >= 500 && weatherId < 600): return "🌧";
-        case (weatherId >= 600 && weatherId < 700): return "❄";
-        case (weatherId >= 700 && weatherId < 800): return "🌫";
-        case (weatherId === 800): return "☀";
-        case (weatherId >= 801 && weatherId < 810): return "☁";
-        default: return "❓";
-    }
-}
-
-// Error display
-function displayError(message) {
-
-    card.classList.remove("hidden");
-    card.innerHTML = `
-        <p class="text-xl font-bold text-gray-700">${message}</p>
-    `;
-}

@@ -1,37 +1,49 @@
-# README — Lokale site met XAMPP
+# FoTo project
 
-Deze map bevat een PHP-site die je lokaal met XAMPP kunt openen.
+Dit project is een simpele PHP-webapp voor het bekijken, boeken en beheren van activiteiten.
 
-**Voorwaarden:**
-- XAMPP geïnstalleerd (Apache minimaal).
-- Project staat in de XAMPP `htdocs`-map: `c:\xampp\htdocs\Foto project\code`
+## Starten met XAMPP
 
-**Starten:**
-1. Open de XAMPP Control Panel.
-2. Start **Apache** (en MySQL als je database nodig hebt).
+1. Zet de map in `c:\xampp\htdocs\foto_project`.
+2. Start `Apache` en `MySQL` in XAMPP.
+3. Open in de browser:
 
-**Openen in de browser:**
-- Als de map exact staat als `c:\xampp\htdocs\Foto project\code` (let op spaties), open in je browser:
+`http://localhost/foto_project/code/`
 
-  http://localhost/Foto%20project/code/
+## Belangrijke onderdelen
 
-  of direct naar de index:
+- `autoload.php`: laadt classes automatisch.
+- `classes/db.php`: databaseverbinding als singleton.
+- `classes/BaseModel.php`: abstracte basisclass voor modellen.
+- `classes/ActivityRepositoryInterface.php`: interface voor het activiteitenmodel.
+- `classes/ActivityModel.php`: ophalen, toevoegen, aanpassen en verwijderen van activiteiten.
+- `classes/Auth.php`: inloggen, registreren en uitloggen.
+- `classes/User.php`: gebruiker met rollen zoals `guest`, `user` en `admin`.
+- `js/form.js` en `js/FormValidator.js`: formuliercontrole met modules en classes.
+- `js/Weer.js` en `js/WeatherService.js`: API-aanroep naar OpenWeather met JSON, DOM-manipulatie en HTML-template.
 
-  http://localhost/Foto%20project/code/index.php
+## Uitleg voor de rubric
 
-- Aanbevolen: verwijder spaties uit de mapnaam (`Foto_project`) en gebruik dan simpeler:
+### JS
 
-  http://localhost/Foto_project/code/
+- API en JSON:
+  Het weer wordt opgehaald met `fetch()` uit de OpenWeather API. Het antwoord komt terug als JSON en wordt verwerkt in JavaScript.
+- OOP:
+  `WeatherApp` gebruikt `extends` van `WeatherService`. `FormValidator` gebruikt `extends` van `BaseValidator`. Er wordt ook een `static` methode gebruikt.
+- Modules:
+  De JS-bestanden gebruiken `import` en `export`.
+- DOM en events:
+  Met `addEventListener()` worden klikken en submits afgehandeld. De pagina wordt aangepast met `innerHTML` en nieuwe DOM-elementen.
+- HTML templates:
+  De weerkaart wordt opgebouwd met een template string in JavaScript.
 
-- Als Apache op een andere poort draait (bijv. 8080):
+### PHP
 
-  http://localhost:8080/Foto%20project/code/
-
-**Virtual Host (optioneel, netter):**
-- Voeg een VirtualHost toe en een hosts-entry (`127.0.0.1 mysite.test`) als je liever een eigen domein gebruikt.
-
-**Problemen oplossen:**
-- Controleer in XAMPP Control Panel of Apache draait en op welke poort.
-- Controleer firewall/antivirus die poort 80/8080 kan blokkeren.
-
-
+- OOP:
+  Het project gebruikt classes zoals `Auth`, `User`, `ActivityModel`, `Database` en `deelnemers`.
+- Interface en abstract:
+  `ActivityModel` gebruikt de interface `ActivityRepositoryInterface` en er is een abstracte basisclass `BaseModel`.
+- Database connectie:
+  `Database` is een singleton zodat er steeds dezelfde databaseverbinding wordt hergebruikt.
+- Autoloader:
+  In `autoload.php` worden classes automatisch geladen.

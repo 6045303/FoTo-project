@@ -1,10 +1,9 @@
 import FormValidator from "./FormValidator.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    const form = document.querySelector("form");
+    const form = document.querySelector("form[data-form-type='booking']");
 
     if (!form) {
-        console.warn("Geen formulier gevonden.");
         return;
     }
 

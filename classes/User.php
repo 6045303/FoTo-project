@@ -2,29 +2,53 @@
 
 class User
 {
-    public int $id;
-    public string $username;
-    public string $role; // admin | user | guest
+    private ?int $id;
+    private string $username;
+    private string $role;
 
-    public function __construct($id = 0, $username = "Gast", $role = "guest")
+    public function __construct(?int $id = null, string $username = 'Gast', string $role = 'guest')
     {
         $this->id = $id;
         $this->username = $username;
         $this->role = $role;
     }
 
-    public function isAdmin(): bool
+    public static function guest(): self
     {
-        return $this->role === "admin";
+        return new self();
     }
 
-    public function isUser(): bool
+    public static function fromSession(array $user): self
     {
-        return $this->role === "user";
+        return new self(
+            isset($user['id']) ? (int) $user['id'] : null,
+            (string) ($user['username'] ?? 'Gast'),
+            (string) ($user['role'] ?? 'guest')
+        );
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
     }
 
     public function isGuest(): bool
     {
-        return $this->role === "guest";
+        return $this->role === 'guest';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }
