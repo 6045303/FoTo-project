@@ -1,0 +1,85 @@
+<?php
+require_once 'classes/autoload.php';
+
+$auth = new Auth();
+$error = "";
+
+// Als het formulier is verstuurd
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $confirm  = trim($_POST['confirm'] ?? '');
+
+    // Wachtwoorden moeten gelijk zijn
+    if ($password !== $confirm) {
+        $error = "Wachtwoorden komen niet overeen";
+    } else {
+        // Registreren
+        if ($auth->register($username, $password)) {
+            header("Location: login.php?success=registered");
+            exit;
+        } else {
+            $error = "Gebruikersnaam bestaat al";
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Registreren</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white shadow-xl rounded-lg p-8 w-full max-w-sm">
+
+        <h2 class="text-2xl font-bold text-center mb-6 text-[#0B0B45]">
+            Registreren
+        </h2>
+
+        <?php if (!empty($error)): ?>
+            <div class="bg-red-200 border border-red-600 text-black p-3 rounded mb-4 text-center">
+                ⚠️ <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="post" class="space-y-4">
+
+            <div>
+                <label class="block mb-1 font-medium">Gebruikersnaam</label>
+                <input type="text" name="username" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#0B0B45]">
+            </div>
+
+            <div>
+                <label class="block mb-1 font-medium">Wachtwoord</label>
+                <input type="password" name="password" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#0B0B45]">
+            </div>
+
+            <div>
+                <label class="block mb-1 font-medium">Herhaal wachtwoord</label>
+                <input type="password" name="confirm" required
+                       class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#0B0B45]">
+            </div>
+
+            <button class="primary-btn w-full mt-4">
+                Registreren
+            </button>
+
+        </form>
+
+        <p class="text-center mt-4">
+            Al een account?
+            <a href="login.php" class="text-[#0B0B45] font-semibold">Inloggen</a>
+        </p>
+
+    </div>
+
+</body>
+</html>
