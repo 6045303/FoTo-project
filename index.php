@@ -1,14 +1,22 @@
 <?php
-require_once 'classes/autoload.php';
+require_once 'autoload.php';
+session_start();
 
-$auth = new Auth();
-$user = $auth->user();
+// Check login (optioneel)
+$user = null;
 
-$model = new ActivityModel();
+if (isset($_SESSION['user_id'])) {
+    $user = new User();
+    $user->loadById($_SESSION['user_id']);
+}
+
+// Activiteit modellen
+$binnenModel = new BinnenActiviteit();
+$buitenModel = new BuitenActiviteit();
 
 // Activiteiten ophalen
-$binnen = $model->getByType('binnen') ?? [];
-$buiten = $model->getByType('buiten') ?? [];
+$binnen = $binnenModel->getAllByType('binnen') ?? [];
+$buiten = $buitenModel->getAllByType('buiten') ?? [];
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -31,8 +39,8 @@ $buiten = $model->getByType('buiten') ?? [];
 
                 <li><a href="index.php" class="text-white">Overzicht</a></li>
 
-                <?php if (!$user->isGuest()): ?>
-                    <li><a href="mijn_activiteiten.php" class="text-white">Mijn activiteiten</a></li>
+                <?php if ($user): ?>
+                    <li><a href="dashboard.php" class="text-white">Mijn activiteiten</a></li>
 
                     <li>
                         <form action="logout.php" method="post">
@@ -98,16 +106,18 @@ $buiten = $model->getByType('buiten') ?? [];
 
                                         <a href="BinnenActiviteit.php?id=<?= (int)$b['id']; ?>"
                                            class="px-3 py-1 rounded text-sm secondary-btn">
-                                            Bewerken
+                                            Bekijken
                                         </a>
 
-                                        <form method="post" action="delete_booking.php"
-                                              onsubmit="return confirm('Weet je zeker dat je deze reservering wilt verwijderen?');">
-                                            <input type="hidden" name="id" value="<?= (int)$b['id']; ?>">
-                                            <button type="submit" class="px-3 py-1 rounded text-sm primary-btn">
-                                                Verwijder
-                                            </button>
-                                        </form>
+                                        <?php if ($user && $user->isAdmin()): ?>
+                                            <form method="post" action="delete_booking.php"
+                                                  onsubmit="return confirm('Weet je zeker dat je deze reservering wilt verwijderen?');">
+                                                <input type="hidden" name="id" value="<?= (int)$b['id']; ?>">
+                                                <button type="submit" class="px-3 py-1 rounded text-sm primary-btn">
+                                                    Verwijder
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
 
                                     </div>
 
@@ -117,9 +127,11 @@ $buiten = $model->getByType('buiten') ?? [];
                     </div>
 
                     <div class="p-4 bg-gray-50 text-right">
-                        <a href="BinnenActiviteit.php" class="px-4 py-2 rounded secondary-btn">
-                            Nieuwe binnen activiteit
-                        </a>
+                        <?php if ($user): ?>
+                            <a href="BinnenActiviteit.php" class="px-4 py-2 rounded secondary-btn">
+                                Nieuwe binnen activiteit
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -164,16 +176,18 @@ $buiten = $model->getByType('buiten') ?? [];
 
                                         <a href="BuitenActiviteit.php?id=<?= (int)$b['id']; ?>"
                                            class="px-3 py-1 rounded text-sm secondary-btn">
-                                            Bewerken
+                                            Bekijken
                                         </a>
 
-                                        <form method="post" action="delete_booking.php"
-                                              onsubmit="return confirm('Weet je zeker dat je deze reservering wilt verwijderen?');">
-                                            <input type="hidden" name="id" value="<?= (int)$b['id']; ?>">
-                                            <button type="submit" class="px-3 py-1 rounded text-sm primary-btn">
-                                                Verwijder
-                                            </button>
-                                        </form>
+                                        <?php if ($user && $user->isAdmin()): ?>
+                                            <form method="post" action="delete_booking.php"
+                                                  onsubmit="return confirm('Weet je zeker dat je deze reservering wilt verwijderen?');">
+                                                <input type="hidden" name="id" value="<?= (int)$b['id']; ?>">
+                                                <button type="submit" class="px-3 py-1 rounded text-sm primary-btn">
+                                                    Verwijder
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
 
                                     </div>
 
@@ -183,9 +197,11 @@ $buiten = $model->getByType('buiten') ?? [];
                     </div>
 
                     <div class="p-4 bg-gray-50 text-right">
-                        <a href="BuitenActiviteit.php" class="px-4 py-2 rounded secondary-btn">
-                            Nieuwe buiten activiteit
-                        </a>
+                        <?php if ($user): ?>
+                            <a href="BuitenActiviteit.php" class="px-4 py-2 rounded secondary-btn">
+                                Nieuwe buiten activiteit
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 

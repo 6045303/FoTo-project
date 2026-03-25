@@ -1,7 +1,7 @@
 <?php
-require_once 'classes/autoload.php';
+require_once 'autoload.php';
+session_start();
 
-$auth = new Auth();
 $error = "";
 
 // Als het formulier is verstuurd
@@ -10,13 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    // Probeer in te loggen via Auth
-    $user = $auth->login($username, $password);
+    // User object
+    $user = new User();
 
-    if ($user instanceof User) {
+    // Probeer in te loggen
+    if ($user->login($username, $password)) {
+
         // Login succesvol → redirect
-        header("Location: mijn_activiteiten.php");
+        header("Location: dashboard.php");
         exit;
+
     } else {
         $error = "Onjuiste gebruikersnaam of wachtwoord";
     }

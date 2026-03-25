@@ -1,7 +1,7 @@
 <?php
 require_once 'classes/autoload.php';
+session_start();
 
-$auth = new Auth();
 $error = "";
 
 // Als het formulier is verstuurd
@@ -17,12 +17,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Wachtwoorden komen niet overeen";
 
     } else {
-        // Registreren
-        if ($auth->register($username, $email, $password)) {
-            header("Location: login.php?success=registered");
-            exit;
-        } else {
+
+        // Check of username of email al bestaat
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT id FROM users WHERE username = :u OR email = :e LIMIT 1");
+        $stmt->bindParam(':u', $username);
+        $stmt->bindParam(':e', $email);
+        $stmt->execute();
+
+        if ($stmt->fetch()) {
             $error = "Gebruikersnaam of email bestaat al";
+
+        } else {
+            // Nieuwe gebruiker opslaan
+            $stmt = $db->prepare("
+                INSERT INTO users (username, email, password, role)
+                VALUES (:u, :e, :p, 'user')
+            ");
+
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            $stmt->bindParam(':u', $username);
+            $stmt->bindParam(':e', $email);
+            $stmt->bindParam(':p', $hash);
+
+            if ($stmt->execute()) {
+                header("Location: login.php?success=registered");
+                exit;
+            } else {
+                $error = "Er ging iets mis bij het registreren";
+            }
         }
     }
 }

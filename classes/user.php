@@ -2,95 +2,92 @@
 
 class User
 {
-    private int $id;
-    private string $username;
-    private string $email;
-    private string $password; // hashed password
+    private PDO $db;
 
-    // Constructor is private zodat je altijd via static constructors werkt
-    private function __construct(int $id, string $username, string $email, string $password)
+    public int $id;
+    public string $username;
+    public string $email;
+    public string $role;          
+    private string $passwordHash;
+
+    public function __construct()
     {
-        $this->id       = $id;
-        $this->username = $username;
-        $this->email    = $email;
-        $this->password = $password;
+        // Database Singleton
+        $this->db = Database::getInstance();
     }
 
-    // -------------------------
-    // ⭐ Static constructors
-    // -------------------------
-
-    // Maak een user vanuit database-rij
-    public static function fromDatabase(array $row): User
+    //  Login functie
+    public function login(string $username, string $password): bool
     {
-        return new User(
-            $row['id'],
-            $row['username'],
-            $row['email'],
-            $row['password']
-        );
+        $sql = "SELECT * FROM users WHERE username = :username LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($data && password_verify($password, $data['password'])) {
+
+            // Properties vullen
+            $this->id = (int)$data['id'];
+            $this->username = $data['username'];
+            $this->email = $data['email'];
+            $this->passwordHash = $data['password'];
+            $this->role = $data['role'];   // ⭐ Nieuw toegevoegd
+
+            // Session starten
+            $_SESSION['user_id'] = $this->id;
+            session_regenerate_id(true);
+
+            return true;
+        }
+
+        return false;
     }
 
-    // Maak een nieuwe user (bij registratie)
-    public static function create(string $username, string $email, string $password): User
+    // Haal user op via ID (bijv. uit session)
+    public function loadById(int $id): bool
     {
-        return new User(
-            0, // wordt later door database ingevuld
-            $username,
-            $email,
-            password_hash($password, PASSWORD_DEFAULT)
-        );
+        $sql = "SELECT * FROM users WHERE id = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($data) {
+            $this->id = (int)$data['id'];
+            $this->username = $data['username'];
+            $this->email = $data['email'];
+            $this->passwordHash = $data['password'];
+            $this->role = $data['role'];  
+            return true;
+        }
+
+        return false;
     }
 
-    // -------------------------
-    // ⭐ Getters
-    // -------------------------
-
-    public function getId(): int
+    //  Toon user data
+    public function getData(): array
     {
-        return $this->id;
+        return [
+            'id'       => $this->id,
+            'username' => $this->username,
+            'email'    => $this->email,
+            'role'     => $this->role      
+        ];
     }
 
-    public function getUsername(): string
+   
+    public function isAdmin(): bool
     {
-        return $this->username;
+        return $this->role === 'admin';
     }
 
-    public function getEmail(): string
+    // 🚪 Logout
+    public function logout(): void
     {
-        return $this->email;
-    }
-
-    public function getPasswordHash(): string
-    {
-        return $this->password;
-    }
-
-    // -------------------------
-    // ⭐ Domain methods (gedrag)
-    // -------------------------
-
-    // Check of wachtwoord klopt
-    public function verifyPassword(string $password): bool
-    {
-        return password_verify($password, $this->password);
-    }
-
-    // Verander wachtwoord
-    public function changePassword(string $newPassword): void
-    {
-        $this->password = password_hash($newPassword, PASSWORD_DEFAULT);
-    }
-
-    // Update email
-    public function updateEmail(string $newEmail): void
-    {
-        $this->email = $newEmail;
-    }
-
-    // Update username
-    public function updateUsername(string $newUsername): void
-    {
-        $this->username = $newUsername;
+        session_unset();
+        session_destroy();
     }
 }

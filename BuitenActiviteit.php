@@ -1,20 +1,34 @@
 <?php
 require_once 'classes/autoload.php';
+session_start();
 
-$auth = new Auth();
-$user = $auth->user();
+// Check login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
-$model = new ActivityModel();
+// User laden
+$user = new User();
+$user->loadById($_SESSION['user_id']);
+
+// Activiteit model (BELANGRIJK!)
+$model = new BuitenActiviteit();
+
 $edit = null;
 $isEditing = false;
 
 // Check of we een activiteit bewerken
 if (!empty($_GET['id'])) {
-    $edit = $model->getById((int)$_GET['id']);
 
-    // Alleen bewerken als het een buiten-activiteit is
-    if ($edit && $edit['activity_type'] === 'buiten') {
+    if ($model->loadById((int)$_GET['id'])) {
+        $edit = $model->getData();
         $isEditing = true;
+
+        // User mag alleen eigen activiteiten bewerken, admin mag alles
+        if (!$user->isAdmin() && $edit['email'] !== $user->email) {
+            die("Je hebt geen rechten om deze activiteit te bewerken.");
+        }
     }
 }
 ?>
@@ -38,7 +52,7 @@ if (!empty($_GET['id'])) {
         <nav>
             <ul class="flex gap-4 text-sm">
                 <li><a href="index.php" class="text-white">Overzicht</a></li>
-                <li><a href="#" class="text-white">Mijn activiteiten</a></li>
+                <li><a href="dashboard.php" class="text-white">Mijn activiteiten</a></li>
             </ul>
         </nav>
     </div>
@@ -52,117 +66,105 @@ if (!empty($_GET['id'])) {
                 <?= $isEditing ? 'Bewerk deze buiten activiteit' : 'Boek een buiten activiteit' ?>
             </h2>
 
-            <?php if ($user->isGuest()): ?>
+            <form action="classes/save_booking.php" method="post">
 
-                <div class="p-6 bg-yellow-200 border border-yellow-600 rounded mb-6">
-                    <p class="text-black font-medium">
-                        Je moet ingelogd zijn om een activiteit te boeken.
-                    </p>
-                    <a href="login.php" class="primary-btn mt-3 inline-block">Inloggen</a>
-                    <a href="register.php" class="secondary-btn mt-3 inline-block">Registreren</a>
+                <?php if ($isEditing): ?>
+                    <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id']) ?>">
+                <?php endif; ?>
+
+                <input type="hidden" name="activity_type" value="buiten">
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Volledige naam *</label>
+                    <input name="naam" required class="w-full p-3 rounded border"
+                           type="text"
+                           value="<?= htmlspecialchars($edit['naam'] ?? $user->username) ?>">
                 </div>
 
-            <?php else: ?>
-
-                <form action="classes/save_booking.php" method="post">
-
-                    <?php if ($isEditing): ?>
-                        <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id']) ?>">
-                    <?php endif; ?>
-
-                    <input type="hidden" name="activity_type" value="buiten">
-
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Volledige naam *</label>
-                        <input name="naam" required class="w-full p-3 rounded border"
-                               type="text"
-                               value="<?= htmlspecialchars($edit['naam'] ?? '') ?>">
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">E-mail *</label>
-                            <input name="email" required class="w-full p-3 rounded border"
-                                   type="email"
-                                   value="<?= htmlspecialchars($edit['email'] ?? '') ?>">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Telefoon</label>
-                            <input name="telefoon" class="w-full p-3 rounded border"
-                                   type="tel"
-                                   value="<?= htmlspecialchars($edit['telefoon'] ?? '') ?>">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Datum *</label>
-                            <input name="datum" required class="w-full p-3 rounded border"
-                                   type="date"
-                                   value="<?= htmlspecialchars($edit['datum'] ?? '') ?>">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Tijd *</label>
-                            <input name="tijd" required class="w-full p-3 rounded border"
-                                   type="time"
-                                   value="<?= htmlspecialchars($edit['tijd'] ?? '') ?>">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Aantal gasten</label>
-                            <input name="gasten" class="w-full p-3 rounded border"
-                                   type="number" min="1"
-                                   value="<?= htmlspecialchars($edit['gasten'] ?? 1) ?>">
-                        </div>
-                    </div>
-
-                    <!-- WEER API -->
-                    <div class="weatherForm mt-6">
-                        <label class="block text-sm font-medium mb-1">Weer opvragen</label>
-
-                        <div class="flex gap-3">
-                            <input type="text" id="plaats" name="plaats"
-                                   class="cityInput w-full p-3 rounded border"
-                                   value="<?= htmlspecialchars($edit['plaats'] ?? '') ?>"
-                                   placeholder="Voer een plaats in">
-
-                            <button type="button" id="weather-button"
-                                    class="px-4 py-2 rounded font-medium primary-btn">
-                                Weer opvragen
-                            </button>
-                        </div>
-
-                        <div id="weather-result"
-                             class="hidden flex flex-col gap-3 p-5 rounded-xl shadow-lg 
-                                    bg-gradient-to-b from-[#0B0B45] to-[#Faebd7] 
-                                    text-white font-sans mt-4 mx-auto max-w-md text-center">
-                        </div>
+                        <label class="block text-sm font-medium mb-1">E-mail *</label>
+                        <input name="email" required class="w-full p-3 rounded border bg-gray-200"
+                               type="email" readonly
+                               value="<?= htmlspecialchars($user->email) ?>">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium mb-1">Opmerkingen</label>
-                        <textarea name="opmerkingen" class="w-full p-3 rounded border"
-                                  rows="4"><?= htmlspecialchars($edit['opmerkingen'] ?? '') ?></textarea>
+                        <label class="block text-sm font-medium mb-1">Telefoon</label>
+                        <input name="telefoon" class="w-full p-3 rounded border"
+                               type="tel"
+                               value="<?= htmlspecialchars($edit['telefoon'] ?? '') ?>">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Datum *</label>
+                        <input name="datum" required class="w-full p-3 rounded border"
+                               type="date"
+                               value="<?= htmlspecialchars($edit['datum'] ?? '') ?>">
                     </div>
 
-                    <div class="flex gap-3 mt-2">
-                        <button type="submit" class="px-6 py-3 rounded font-medium primary-btn">
-                            <?= $isEditing ? 'Opslaan' : 'Boeken' ?>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tijd *</label>
+                        <input name="tijd" required class="w-full p-3 rounded border"
+                               type="time"
+                               value="<?= htmlspecialchars($edit['tijd'] ?? '') ?>">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Aantal gasten</label>
+                        <input name="gasten" class="w-full p-3 rounded border"
+                               type="number" min="1"
+                               value="<?= htmlspecialchars($edit['gasten'] ?? 1) ?>">
+                    </div>
+                </div>
+
+                <!-- WEER API -->
+                <div class="weatherForm mt-6">
+                    <label class="block text-sm font-medium mb-1">Weer opvragen</label>
+
+                    <div class="flex gap-3">
+                        <input type="text" id="plaats" name="plaats"
+                               class="cityInput w-full p-3 rounded border"
+                               value="<?= htmlspecialchars($edit['plaats'] ?? '') ?>"
+                               placeholder="Voer een plaats in">
+
+                        <button type="button" id="weather-button"
+                                class="px-4 py-2 rounded font-medium primary-btn">
+                            Weer opvragen
                         </button>
-
-                        <a href="index.php" class="px-6 py-3 rounded font-medium secondary-btn inline-flex items-center justify-center">
-                            Annuleren
-                        </a>
-
-                        <a href="BinnenActiviteit.php" class="ml-auto text-sm underline">
-                            Naar binnen activiteit
-                        </a>
                     </div>
 
-                </form>
+                    <div id="weather-result"
+                         class="hidden flex flex-col gap-3 p-5 rounded-xl shadow-lg 
+                                bg-gradient-to-b from-[#0B0B45] to-[#Faebd7] 
+                                text-white font-sans mt-4 mx-auto max-w-md text-center">
+                    </div>
+                </div>
 
-            <?php endif; ?>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Opmerkingen</label>
+                    <textarea name="opmerkingen" class="w-full p-3 rounded border"
+                              rows="4"><?= htmlspecialchars($edit['opmerkingen'] ?? '') ?></textarea>
+                </div>
+
+                <div class="flex gap-3 mt-2">
+                    <button type="submit" class="px-6 py-3 rounded font-medium primary-btn">
+                        <?= $isEditing ? 'Opslaan' : 'Boeken' ?>
+                    </button>
+
+                    <a href="index.php" class="px-6 py-3 rounded font-medium secondary-btn inline-flex items-center justify-center">
+                        Annuleren
+                    </a>
+
+                    <a href="BinnenActiviteit.php" class="ml-auto text-sm underline">
+                        Naar binnen activiteit
+                    </a>
+                </div>
+
+            </form>
+
         </section>
     </div>
 </main>
