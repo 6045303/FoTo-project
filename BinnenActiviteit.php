@@ -1,8 +1,6 @@
 <?php
 require_once 'autoload.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-};
+session_start();
 
 // Check login
 if (!isset($_SESSION['user_id'])) {
@@ -69,7 +67,7 @@ if (!empty($_GET['id'])) {
                 <?= $isEditing ? 'Bewerk deze binnen activiteit' : 'Boek een binnen activiteit' ?>
             </h2>
 
-            <form action="classes/save_booking.php" method="post">
+            <form action="save_booking.php" method="post">
 
                 <?php if ($isEditing): ?>
                     <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id']) ?>">
@@ -102,6 +100,12 @@ if (!empty($_GET['id'])) {
                     </div>
                 </div>
 
+                <label class="block text-sm font-medium mb-1">Plaats</label>
+                <input type="text" id="plaats" name="plaats"
+                    class="cityInput w-full p-3 rounded border"
+                    value="<?= htmlspecialchars($edit['plaats'] ?? '') ?>"
+                    placeholder="Voer een plaats in">
+
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-1">Datum *</label>
@@ -133,7 +137,7 @@ if (!empty($_GET['id'])) {
 
                 <div class="flex gap-3 mt-2">
                     <button type="submit" class="px-6 py-3 rounded font-medium primary-btn">
-                        <?= $isEditing ? 'Opslaan' : 'Boeken' ?>
+                        <?= $isEditing ? 'Opslaan' : 'Aanmaken' ?>
                     </button>
 
                     <a href="index.php" class="px-6 py-3 rounded font-medium secondary-btn inline-flex items-center justify-center">
@@ -158,6 +162,6 @@ if (!empty($_GET['id'])) {
     </div>
 </footer>
 
-<script type="module" src="/code/js/form.js"></script>
+<script type="module" src="/js/form.js"></script>
 </body>
 </html>

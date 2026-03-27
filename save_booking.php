@@ -1,18 +1,16 @@
 <?php
 require_once __DIR__ . '/autoload.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-};
+session_start();
 
 // Alleen POST toegestaan
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../index.php');
+    header('Location: /index.php');
     exit;
 }
 
 // Check login
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php');
+    header('Location: /login.php');
     exit;
 }
 
@@ -22,7 +20,6 @@ $user->loadById($_SESSION['user_id']);
 
 // Activiteit-type bepalen
 $type = $_POST['activity_type'] ?? '';
-
 if ($type === 'binnen') {
     $model = new BinnenActiviteit();
 } elseif ($type === 'buiten') {
@@ -47,7 +44,7 @@ $gekozenDatum = strtotime($model->datum);
 $morgen = strtotime('tomorrow');
 
 if (!$gekozenDatum || $gekozenDatum < $morgen) {
-    header("Location: ../index.php?error=datum");
+    header("Location: /index.php?error=datum");
     exit;
 }
 

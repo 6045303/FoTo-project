@@ -1,8 +1,6 @@
 <?php
 require_once 'autoload.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-};
+session_start();
 
 $error = "";
 
@@ -76,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <p class="text-center mt-4">
                 Nog geen account?
-                <a href="register.php" class="text-[#0B0B45] font-semibold">Registreren</a>
+                <a href="registeer.php" class="text-[#0B0B45] font-semibold">Registreren</a>
             </p>
 
         </form>

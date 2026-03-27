@@ -1,8 +1,6 @@
 <?php
 require_once 'autoload.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-};
+session_start();
 
 // Check login (optioneel)
 $user = null;
@@ -106,10 +104,15 @@ $buiten = $buitenModel->getAllByType('buiten') ?? [];
 
                                     <div class="flex flex-col items-end gap-2">
 
-                                        <a href="BinnenActiviteit.php?id=<?= (int)$b['id']; ?>"
-                                           class="px-3 py-1 rounded text-sm secondary-btn">
-                                            Bekijken
-                                        </a>
+                                        <?php 
+                                            if ($user->isAdmin() || $b['email'] == $user->email) { ?>
+                                            <a href="BinnenActiviteit.php?id=<?= (int)$b['id']; ?>"
+                                                class="px-3 py-1 rounded text-sm secondary-btn">
+                                                Bewerken
+                                            </a>
+                                            <?php }
+                                        ?>
+
 
                                         <?php if ($user && $user->isAdmin()): ?>
                                             <form method="post" action="delete_booking.php"
@@ -176,10 +179,14 @@ $buiten = $buitenModel->getAllByType('buiten') ?? [];
 
                                     <div class="flex flex-col items-end gap-2">
 
-                                        <a href="BuitenActiviteit.php?id=<?= (int)$b['id']; ?>"
-                                           class="px-3 py-1 rounded text-sm secondary-btn">
-                                            Bekijken
-                                        </a>
+                                        <?php 
+                                            if ($user->isAdmin() || $b['email'] == $user->email) { ?>
+                                            <a href="BinnenActiviteit.php?id=<?= (int)$b['id']; ?>"
+                                                class="px-3 py-1 rounded text-sm secondary-btn">
+                                                Bewerken
+                                            </a>
+                                            <?php }
+                                        ?>
 
                                         <?php if ($user && $user->isAdmin()): ?>
                                             <form method="post" action="delete_booking.php"

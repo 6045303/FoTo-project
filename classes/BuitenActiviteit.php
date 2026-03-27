@@ -1,3 +1,4 @@
+<?php
 class BuitenActiviteit extends Activiteit
 {
     protected function getType(): string
@@ -5,3 +6,4 @@ class BuitenActiviteit extends Activiteit
         return "buiten";
     }
 }
+?>

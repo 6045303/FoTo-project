@@ -1,8 +1,6 @@
 <?php
 require_once 'autoload.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-};
+session_start();
 
 // Check login
 if (!isset($_SESSION['user_id'])) {
@@ -61,8 +59,10 @@ function loadActiviteitSubclass(array $row): Activiteit {
     <?php endif; ?>
 
     <div class="flex gap-4 mb-6">
-        <a href="BinnenActiviteit.php" class="px-4 py-2 bg-blue-600 text-white rounded shadow">Binnenactiviteit boeken</a>
-        <a href="BuitenActiviteit.php" class="px-4 py-2 bg-green-600 text-white rounded shadow">Buitenactiviteit boeken</a>
+        <a href="BinnenActiviteit.php" class="px-4 py-2 bg-blue-600 text-white rounded shadow">Binnenactiviteit Aanmaken</a>
+        <a href="BuitenActiviteit.php" class="px-4 py-2 bg-green-600 text-white rounded shadow">Buitenactiviteit Aanmaken</a>
+        <a href="index.php" class="px-4 py-2 bg-orange-700 text-white rounded shadow">Overzicht</a>
+       
         <a href="logout.php" class="px-4 py-2 bg-gray-700 text-white rounded shadow">Uitloggen</a>
     </div>
 
