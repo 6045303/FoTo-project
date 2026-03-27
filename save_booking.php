@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/autoload.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+};
 
 // Alleen POST toegestaan
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

@@ -4,6 +4,7 @@ abstract class Activiteit
 {
     protected PDO $db;
 
+    
     public int $id;
     public string $activity_type;
     public string $naam;
