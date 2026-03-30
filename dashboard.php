@@ -46,7 +46,7 @@ function loadActiviteitSubclass(array $row): Activiteit {
     <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-[#D3B69C] shadow rounded p-6">
 
 <div class="max-w-5xl mx-auto mt-10">
 
@@ -66,7 +66,7 @@ function loadActiviteitSubclass(array $row): Activiteit {
         <a href="logout.php" class="px-4 py-2 bg-gray-700 text-white rounded shadow">Uitloggen</a>
     </div>
 
-    <div class="bg-white shadow rounded p-6">
+    <div class="bg-[#0B0B45] text-white shadow-lg rounded-2xl p-6">
         <h2 class="text-2xl font-semibold mb-4">Jouw activiteiten</h2>
 
         <?php if (empty($activiteiten)): ?>
@@ -75,7 +75,7 @@ function loadActiviteitSubclass(array $row): Activiteit {
 
             <table class="w-full border-collapse">
                 <thead>
-                    <tr class="bg-gray-200 text-left">
+                    <tr class="bg-gray-200 text-left text-black">
                         <th class="p-3">Type</th>
                         <th class="p-3">Datum</th>
                         <th class="p-3">Tijd</th>
