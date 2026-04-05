@@ -104,6 +104,7 @@ if (!empty($_GET['id'])) {
                                type="date"
                                value="<?= htmlspecialchars($edit['datum'] ?? '') ?>">
                     </div>
+                    <script src="js/FormVallidator.js"></script>
 
                     <div>
                         <label class="block text-sm font-medium mb-1">Tijd *</label>

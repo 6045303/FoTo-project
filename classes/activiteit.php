@@ -3,7 +3,7 @@
 abstract class Activiteit
 {
     protected PDO $db;
-
+    public ?User $user = null;
     public int $id;
     public string $activity_type;
     public string $naam;
@@ -16,6 +16,7 @@ abstract class Activiteit
     public string $opmerkingen;
     public string $plaats;
     public string $created_at;
+
 
     public function __construct()
     {
@@ -60,6 +61,10 @@ abstract class Activiteit
         $this->opmerkingen   = $data['opmerkingen'];
         $this->plaats        = $data['plaats'];
         $this->created_at    = $data['created_at'];
+        if (isset($data['user_id'])) {
+        $this->user = new User();
+        $this->user->loadById((int)$data['user_id']);
+}
     }
 
     // ------------------------------
@@ -76,9 +81,9 @@ abstract class Activiteit
     protected function insert(): bool
     {
         $sql = "INSERT INTO bookings 
-                (activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, opmerkingen, plaats, created_at)
-                VALUES 
-                (:activity_type, :naam, :email, :telefoon, :datum, :tijd, :gasten, :locatie, :opmerkingen, :plaats, NOW())";
+        (activity_type, naam, email, telefoon, datum, tijd, gasten, locatie, opmerkingen, plaats, user_id, created_at)
+        VALUES 
+        (:activity_type, :naam, :email, :telefoon, :datum, :tijd, :gasten, :locatie, :opmerkingen, :plaats, :user_id, NOW())";
 
         $stmt = $this->db->prepare($sql);
 
@@ -92,6 +97,8 @@ abstract class Activiteit
         $stmt->bindParam(':locatie', $this->locatie);
         $stmt->bindParam(':opmerkingen', $this->opmerkingen);
         $stmt->bindParam(':plaats', $this->plaats);
+        $user_id = $this->user?->id;
+        $stmt->bindParam(':user_id', $user_id);
 
         if ($stmt->execute()) {
             $this->id = (int)$this->db->lastInsertId();
@@ -114,6 +121,7 @@ abstract class Activiteit
                 locatie = :locatie,
                 opmerkingen = :opmerkingen,
                 plaats = :plaats
+                user_id = :user_id
                 WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -128,6 +136,7 @@ abstract class Activiteit
         $stmt->bindParam(':locatie', $this->locatie);
         $stmt->bindParam(':opmerkingen', $this->opmerkingen);
         $stmt->bindParam(':plaats', $this->plaats);
+        $stmt->bindParam(':user_id', $user_id);
         $stmt->bindParam(':id', $this->id);
 
         return $stmt->execute();
@@ -168,7 +177,7 @@ abstract class Activiteit
             'created_at'    => $this->created_at
         ];
     }
-    public static function getAllByType(string $type): array
+public static function getAllByType(string $type): array
 {
     $db = Database::getInstance();
     $stmt = $db->prepare("SELECT * FROM bookings WHERE activity_type = :type ORDER BY datum, tijd");

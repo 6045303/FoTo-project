@@ -12,11 +12,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $confirm  = trim($_POST['confirm'] ?? '');
 
-    // Wachtwoorden moeten gelijk zijn
     if ($password !== $confirm) {
         $error = "Wachtwoorden komen niet overeen";
 
-    } else {
+    } 
+    // 👇 HIER komt jouw nieuwe check
+    elseif (!preg_match('/[A-Z].*[A-Z]/', $password)) {
+        $error = "Wachtwoord moet minstens 2 hoofdletters bevatten";
+
+    } elseif (!preg_match('/[\W]/', $password)) {
+        $error = "Wachtwoord moet minstens 1 leesteken bevatten";
+
+    }
+    // database check + insert
+    else {
 
         // Check of username of email al bestaat
         $db = Database::getInstance();
@@ -29,10 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Gebruikersnaam of email bestaat al";
 
         } else {
-            // Nieuwe gebruiker opslaan
+            $role = 'user';
+
+            if ($email === "admin@foto.nl") {
+                $role = 'admin';
+                }
             $stmt = $db->prepare("
                 INSERT INTO users (username, email, password, role)
-                VALUES (:u, :e, :p, 'user')
+                VALUES (:u, :e, :p, :r)
             ");
 
             $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -40,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':u', $username);
             $stmt->bindParam(':e', $email);
             $stmt->bindParam(':p', $hash);
+            $stmt->bindParam(':r', $role);
 
             if ($stmt->execute()) {
                 header("Location: login.php?success=registered");
@@ -60,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-[#D3B69C] shadow rounded p-6 flex items-center justify-center min-h-screen">
 
     <div class="bg-white shadow-xl rounded-lg p-8 w-full max-w-sm">
 
