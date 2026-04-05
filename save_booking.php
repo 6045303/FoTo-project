@@ -38,6 +38,7 @@ $model->gasten      = (int)($_POST['gasten'] ?? 1);
 $model->opmerkingen = trim($_POST['opmerkingen'] ?? '');
 $model->plaats      = $_POST['plaats'] ?? null;
 $model->locatie     = $_POST['locatie'] ?? '';
+$model->user = $user;
 
 // Datumcontrole: datum moet minimaal morgen zijn
 $gekozenDatum = strtotime($model->datum);

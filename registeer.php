@@ -12,11 +12,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $confirm  = trim($_POST['confirm'] ?? '');
 
-    // Wachtwoorden moeten gelijk zijn
     if ($password !== $confirm) {
         $error = "Wachtwoorden komen niet overeen";
 
-    } else {
+    } 
+    // 👇 HIER komt jouw nieuwe check
+    elseif (!preg_match('/[A-Z].*[A-Z]/', $password)) {
+        $error = "Wachtwoord moet minstens 2 hoofdletters bevatten";
+
+    } elseif (!preg_match('/[\W]/', $password)) {
+        $error = "Wachtwoord moet minstens 1 leesteken bevatten";
+
+    }
+    // database check + insert
+    else {
 
         // Check of username of email al bestaat
         $db = Database::getInstance();
